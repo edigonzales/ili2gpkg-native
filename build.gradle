@@ -1,0 +1,131 @@
+plugins {
+    id 'application'
+    id 'org.graalvm.buildtools.native' version '0.9.16'
+    id 'org.jreleaser' version '1.2.0'
+}
+
+def APP_VERSION = "4.9.1"
+
+def myArtifactId = "ili2gpkg"
+def buildNumber = System.env.GITHUB_RUN_NUMBER
+def os = org.gradle.nativeplatform.platform.internal.DefaultNativePlatform.currentOperatingSystem; 
+
+dependencies {
+    implementation "ch.interlis:ili2gpkg:${APP_VERSION}" 
+
+    /* 
+    Explizite Angabe dieser Dependency ist notwendig, das sonst runtime error.
+    Bewusste neuere Version von sqlite-jdbc zwecks Support von Apple Silicon und
+    Linux ARM.
+    */
+	implementation group: 'org.xerial', name: 'sqlite-jdbc', version: '3.39.3.0'
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven {
+        url "https://jars.interlis.ch"
+    }
+}
+
+graalvmNative {
+    toolchainDetection = false
+    binaries {
+        main {
+            imageName = 'ili2gpkg'
+            mainClass = 'ch.ehi.ili2gpkg.GpkgMain' 
+            debug = false 
+            verbose = true 
+            fallback = false 
+            //configurationFileDirectories.from(file("conf-dir-"+getOperatingSystemName()+"/")) // TODO: mit gui wieder nötig
+            configurationFileDirectories.from(file("conf-dir/"))
+
+            buildArgs.add('--enable-url-protocols=http,https') 
+                        
+            jvmArgs.add("-Djava.awt.headless=false")
+
+            useFatJar = true
+        }
+    }
+}
+
+distributions {
+    nativeImage {
+        contents {
+            from 'build/native/nativeCompile/'
+        }
+    }
+}
+
+nativeImageDistZip {
+    archiveName myArtifactId + '-' + APP_VERSION + "_" + buildNumber + '-' + getOperatingSystemName() + '-' + getArchitectureName() + ".zip"
+}
+
+jreleaser {
+    gitRootSearch = true
+    
+    project {
+        name = myArtifactId
+        description = 'Native binaries for ili2gpkg.'
+        website = 'http://blog.sogeo.services'
+        authors = ['edigonzales']
+        license = 'MIT'
+        docsUrl = 'https://github.com/edigonzales/ili2gpkg-native'
+        copyright = '2022 Stefan Ziegler'
+        version = APP_VERSION + "_" + buildNumber
+        versionPattern = 'CUSTOM'
+        java {
+            groupId = 'ch.interlis'
+        }
+    }
+
+    release {
+        github {
+            repoOwner = 'edigonzales'
+            overwrite = true
+            apiEndpoint = 'https://api.github.com'
+        }
+    }
+
+    distributions {
+        appNative {
+            distributionType = 'NATIVE_IMAGE'
+            stereotype = 'CLI'
+            artifact {
+                path = "./artifacts-native/ili2gpkg-${APP_VERSION}_${buildNumber}-linux-x86-64.zip"
+                platform = 'linux'
+            }
+            artifact {
+                path = "./artifacts-native/ili2gpkg-${APP_VERSION}_${buildNumber}-osx-x86-64.zip"
+                platform = 'osx'
+            }
+            artifact {
+                path = "./artifacts-native/ili2gpkg-${APP_VERSION}_${buildNumber}-windows-x86-64.zip"
+                platform = 'windows'
+            }
+        }
+    }
+}
+
+def getOperatingSystemName() {
+    def os = org.gradle.nativeplatform.platform.internal.DefaultNativePlatform.currentOperatingSystem; 
+    def osName = os.getName().toLowerCase();
+    if (osName.contains("windows")) {
+        return "windows";
+    } else if (osName.contains("mac os x") || osName.contains("darwin") || osName.contains("osx")) {
+        return "osx";
+    } else if (osName.contains("linux")) {
+        return "linux";
+    } else {
+        // not strictly true
+        return "unix";
+    }
+}
+
+def getArchitectureName() {
+    def arch = org.gradle.nativeplatform.platform.internal.DefaultNativePlatform.currentArchitecture; 
+    def archName = arch.getName().toLowerCase();
+    return archName;    
+}
+
