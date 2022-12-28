@@ -17,3 +17,5 @@ Auf einem Apple Silicon Rechner muss der Agent bereits mit einer gepatchten Vers
 ```
 java -agentlib:native-image-agent=config-output-dir=conf-dir -jar /Users/stefan/apps/ili2gpkg-4.9.0-aarch64/ili2gpkg-4.9.0.jar --dbfile fubar.gpkg --nameByTopic --defaultSrsCode 2056 --strokeArcs --models SO_ARP_Bauzonengrenzen_20210120 --doSchemaImport  --import /Users/stefan/Downloads/ch.so.arp.bauzonengrenzen_xtf/ch.so.arp.bauzonengrenzen.xtf
 ```
+
+
