@@ -6,7 +6,7 @@ Native Images von _ili2gpkg_ für Windows, macOS und Linux. Java wird nicht mehr
 ./ili2gpkg --help
 ```
 
-Für jede Version von _ili2gpkg_ gibt es einen Branch, z.B. `V_4_9_1`. Das Native Image wird als Zip-Datei unter https://github.com/edigonzales/ili2pg-native/releases veröffentlicht. Die Zahl nach dem Unterstrich entspricht der Buildnummer der Github-Action. Der main-Branch kann keine Releases machen.
+Für jede Version von _ili2gpkg_ gibt es einen Branch, z.B. `V_4_9_1`. Das Native Image wird als Zip-Datei unter https://github.com/edigonzales/ili2gpkg-native/releases veröffentlicht. Die Zahl nach dem Unterstrich entspricht der Buildnummer der Github-Action. Der main-Branch kann keine Releases machen.
 
 ## Develop
 
